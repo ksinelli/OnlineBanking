@@ -45,8 +45,49 @@ public class login {
 	
 	
 	public static void signIn() {
-		System.out.println("Signing in..");
+		System.out.println("Please enter your username.  Type \"Home\" to return to the main screen.");
+		
+		String username = scan.nextLine().toLowerCase();
+		
+		if (username.equals("home")) {
+			startup();
+		}
+		
+		//Connect to database.  Compare entered username and password to database values and redirect appropriately.
+		try {
+			
+			Connection conn = DriverManager.getConnection("jdbc:postgresql://ziggy.db.elephantsql.com/wxjpiraq","wxjpiraq","D6DpgE-lOUMD-QRrIBLiSUBhmxs5FW-_");
+			
+			Statement stmt = conn.createStatement();
+			
+			ResultSet resultSet = stmt.executeQuery("select username from logins where username = '"+username+"'");
+			
+			if (resultSet.next() == false) {
+				System.out.println("That username does not exist in our system.  Please check your spelling and try again or create a new account.\n");
+				signIn();
+			}
+			
+			System.out.println("Please enter your password.");
+			
+			String password = scan.nextLine();
+			
+			resultSet = stmt.executeQuery("select password from logins where username = '"+username+"'");
+			
+			resultSet.next();
+			
+			String dbPassword = resultSet.getString("password");
+			
+			if (password.equals(dbPassword)) {
+				dashboard.dashboardMenu();
+			}
+			
+		}
+			
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
+	
 	
 	public static void createAccount() {
 		System.out.println("Please enter a username.  Type \"Home\" to return to the main screen.");
@@ -57,6 +98,7 @@ public class login {
 			startup();
 		}
 		
+		//Connect to database.  Make sure username entered is unique, prompt for password, redirect as appropriate.
 		try {
 			
 			Connection conn = DriverManager.getConnection("jdbc:postgresql://ziggy.db.elephantsql.com/wxjpiraq","wxjpiraq","D6DpgE-lOUMD-QRrIBLiSUBhmxs5FW-_");
@@ -97,6 +139,7 @@ public class login {
 			startup();
 		}
 		
+		//Connect to database.  Compare entered values to database values, prompt for new password.  Redirect as appropriate.
 		try {
 			Connection conn = DriverManager.getConnection("jdbc:postgresql://ziggy.db.elephantsql.com/wxjpiraq","wxjpiraq","D6DpgE-lOUMD-QRrIBLiSUBhmxs5FW-_");
 			
