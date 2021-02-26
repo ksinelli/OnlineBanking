@@ -1,22 +1,24 @@
 package Customer;
 import Utility.DatabaseConnection;
 import Utility.MyScanner;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import Account.Account;
 import Account.Transaction;
 
 public class CustomerDashboard {
 	
-	private static ResultSet resultSet;
 	private static String choice;
+	private static boolean hasAccount;
 	
 	public static void dashboardMenu (Customer customer) {
 		
+		ArrayList<Account> accountArray = Account.createAccountArrayList(customer);
 		Account account = new Account();
+		
+		ArrayList<Transaction> transactionArray = Transaction.createTransactionArrayList(customer);
 		Transaction transaction = new Transaction();
 		
-		System.out.println("You are at the dashboard.  Type one of the options below:\n");
+		System.out.println("\nYou are at the dashboard.  Type one of the options below:\n");
 		System.out.println("Open Account");
 		System.out.println("Close Account");
 		System.out.println("Make Deposit");
@@ -29,38 +31,51 @@ public class CustomerDashboard {
 		choice = MyScanner.getInputToLower();
 		
 		if (choice.equals("open account")) {
-			account.openAccount(customer, account);
+			account.hasAccount(customer);
+			Account.openAccount(customer, account);
 		}
 		
 		else if (choice.equals("close account")) {
-			account.closeAccount(customer, account);
+			hasAccount = account.hasAccount(customer);
+			Account.rerouteIfNoAccount(hasAccount, customer);
+			account.closeAccount(customer, accountArray, account, transactionArray);
+			dashboardMenu(customer);
 		}
 		
 		else if (choice.equals("make deposit")) {
-			makeDeposit(customer);
+			hasAccount = account.hasAccount(customer);
+			Account.rerouteIfNoAccount(hasAccount, customer);
+			System.out.println("\nPlease enter the six digit account number for the account into which you would like to deposit money.");
+			account.checkAccountNumber(customer, accountArray, account);
+			transaction.makeDeposit(customer, account,transaction, transactionArray);
+			dashboardMenu(customer);
 		}
 		
 		else if (choice.equals("make withdrawal")) {
-			makeWithdrawal(customer);
+			hasAccount = account.hasAccount(customer);
+			Account.rerouteIfNoAccount(hasAccount, customer);
+			System.out.println("\nPlease enter the six digit account number for the account from which you would like to withdraw money.");
+			account.checkAccountNumber(customer, accountArray, account);
+			transaction.makeWithdrawal(customer, account, transaction, transactionArray);
+			dashboardMenu(customer);
 		}
 		
 		else if (choice.equals("check balance")) {
-			checkBalance(customer);
+			hasAccount = account.hasAccount(customer);
+			Account.rerouteIfNoAccount(hasAccount, customer);
+			dashboardMenu(customer);
 		}
 		
 		else if (choice.equals("transaction history")) {
-			transactionHistory(customer);
+			hasAccount = account.hasAccount(customer);
+			Account.rerouteIfNoAccount(hasAccount, customer);
+			transaction.transactionHistory(customer, accountArray, account, transaction, transactionArray);
+			dashboardMenu(customer);
 		}
 		
 		else if (choice.equals("update profile")) {
-			customer.updateProfile(customer);
-			
-			try {
-				DatabaseConnection.executeUpdate("Update customer set first_name = '"+customer.getFirst_name()+"', last_name = '"+customer.getLast_name()+"', address_line_1 = '"+customer.getAddress_line_1()+"', address_line_2 = '"+customer.getAddress_line_2()+"', city = '"+customer.getCity()+"', state = '"+customer.getState()+"', zip = '"+customer.getZip()+"', phone = '"+customer.getPhone()+"', email = '"+customer.getEmail()+"' where customer_id = "+customer.getCustomer_id());
-			}
-			catch (SQLException e) {
-				e.printStackTrace();
-			}
+			customer = customer.createOrUpdateProfile(customer);
+			customer.pushProfileToDatabase(customer);
 			
 			System.out.println("Your profile has been updated.\n");
 			dashboardMenu(customer);
@@ -74,22 +89,6 @@ public class CustomerDashboard {
 			System.out.println("I'm sorry.  I didn't understand that.  Please check your spelling and try again.\n");
 			dashboardMenu(customer);
 		}
-	}
-	
-	public static void makeDeposit(Customer customer) {
-		
-	}
-	
-	public static void makeWithdrawal(Customer customer) {
-		
-	}
-	
-	public static void checkBalance(Customer customer) {
-		
-	}
-
-	public static void transactionHistory(Customer customer) {
-		
 	}
 	
 	public static void signOut(Customer customer) {

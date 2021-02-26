@@ -31,5 +31,11 @@ public class MyScanner {
 		}
 		return input;
 	}
+	
+	public static int getNumber() {
+		int input = scan.nextInt();
+		scan.nextLine();
+		return input;
+	}
 
 }

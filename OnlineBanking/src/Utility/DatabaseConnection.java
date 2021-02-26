@@ -1,15 +1,13 @@
 package Utility;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class DatabaseConnection {
 	
 	static Connection conn;
 	
-	//establish DB connection
 	public static void getDbConnection() {
 		
 		try {	
@@ -29,19 +27,8 @@ public class DatabaseConnection {
 		}
 	}
 	
-	//query the database and return the results in a ResultSet object
-	public static ResultSet executeQuery(String SQL) throws SQLException {
-		
-	Statement stmt = conn.createStatement();
-	ResultSet resultSet = stmt.executeQuery(SQL);
-		
-	return resultSet;
-	}
-	
-	//send an update statement to the database
-	public static void executeUpdate(String SQL) throws SQLException {
-		
-	Statement stmt = conn.createStatement();
-	stmt.executeUpdate(SQL);	
+	public static PreparedStatement prepareStatement(String SQL) throws SQLException {
+	PreparedStatement stmt = conn.prepareStatement(SQL);
+	return stmt;
 	}
 }
