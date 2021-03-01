@@ -75,9 +75,13 @@ public class CustomerDashboard {
 		
 		else if (choice.equals("update profile")) {
 			customer = customer.createOrUpdateProfile(customer);
+			
+			System.out.println(customer.toString());
+			MyScanner.getInput();
+			
 			customer.pushProfileToDatabase(customer);
 			
-			System.out.println("Your profile has been updated.\n");
+			System.out.println("Your profile has been updated.");
 			dashboardMenu(customer);
 		}
 		

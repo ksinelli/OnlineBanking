@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
+
 import Customer.Customer;
 import Customer.CustomerDashboard;
 import Utility.DatabaseConnection;
@@ -121,8 +123,20 @@ public class Transaction {
 	
 	
 	public void makeDeposit(Customer customer, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
+		
+		int depositAmount = 0;
+		
 		System.out.println("How much would you like to deposit?");
-		int depositAmount = MyScanner.getNumber();
+		
+		try {
+			depositAmount = MyScanner.getNumber();
+		}
+		catch (InputMismatchException e){
+			MyScanner.scan.nextLine();
+			System.out.println("Come on now, let's be at least a little realstic and stop trying to crash my program :)\n");
+			transaction.makeDeposit(customer, account, transaction, transactionArray);
+		}
+		
 		account.setAccountBalance(account.getAccountBalance() + depositAmount);
 		try {
 			//update account table
@@ -178,17 +192,15 @@ public class Transaction {
 	}
 	
 	public void transactionHistory(Customer customer, ArrayList<Account> accountArray, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
-		account.hasAccount(customer);
 		System.out.println("\nPlease enter the six digit account number for which you would like to get the transaction history.");
 		account = account.checkAccountNumber(customer, accountArray, account);
-		System.out.println("Transaction ID\t\tTransaction Date\t\tTransaction Amount\t\tTransaction Type");
+		System.out.printf("%-20s%-20s%-20s%-20s%n", "Transaction ID", "Transaction Date", "Transaction Amount", "Transaction Type");
 		for (int i = 0; i<=transactionArray.size()-1; i++) {
 			if (transactionArray.get(i).getAccountNumber().equals(account.getAccountNumber())) {
-				System.out.print(transactionArray.get(i).getTransactionID()+"\t\t\t");
-				System.out.print(transactionArray.get(i).getTransactionDate()+"\t\t\t");
-				System.out.print(transactionArray.get(i).getTransactionAmount()+"\t\t\t\t");
-				System.out.print(transactionArray.get(i).getTransactionType());
-				System.out.println();
+				System.out.printf("%-20s", transactionArray.get(i).getTransactionID());
+				System.out.printf("%-20s", transactionArray.get(i).getTransactionDate());
+				System.out.printf("%-20s", transactionArray.get(i).getTransactionAmount());
+				System.out.printf("%-20s%n", transactionArray.get(i).getTransactionType());
 			}
 		}
 	}

@@ -82,6 +82,7 @@ public class LoginScreen {
 			catch (SQLException e) {
 			e.printStackTrace();
 			}		
+		
 		return input;
 	}
 

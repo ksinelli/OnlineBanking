@@ -3,7 +3,6 @@ package Customer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import Utility.DatabaseConnection;
 import Utility.MyScanner;
 
@@ -28,7 +27,7 @@ public class Customer {
 	public int getCustomerID() {
 		return customerID;
 	}
-	public void setCustomer_id(int customerID) {
+	public void setCustomerID(int customerID) {
 		this.customerID = customerID;
 	}
 	public String getUsername() {
@@ -102,9 +101,9 @@ public class Customer {
 		System.out.println("Please provide some additional information about yourself.");
 		System.out.println("Only first name is required.  All other fields are optional.  Press Enter to leave a field blank.");
 		System.out.println("NOTE: DO NOT USE YOUR REAL INFORMATION.  Be creative and make something up!\n");
-	
-		System.out.println("First Name: ");	
-		customer.setFirstName(MyScanner.getInput());
+		
+		System.out.println("First Name: ");
+		customer.checkFirstName(customer);
 
 		System.out.println("Last Name: ");
 		customer.setLastName(MyScanner.getInput());
@@ -118,17 +117,13 @@ public class Customer {
 		System.out.println("City: ");
 		customer.setCity(MyScanner.getInput());
 	
-		System.out.println("State (2 Letter Abbreviation): ");
-		customer.setState(MyScanner.getInput());
+		customer.checkStateAbbreviation(customer);
 
-		System.out.println("ZIP Code (5 Digits Only): ");
-		customer.setZip(MyScanner.getInput());
+		customer.checkZipCode(customer);
 
-		System.out.println("Phone (10 Digits and Numbers Only): ");
-		customer.setPhone(MyScanner.getInput());
+		customer.checkPhoneNumber(customer);
 	
-		System.out.println("Email Address: ");
-		customer.setEmail(MyScanner.getInput());
+		customer.checkEmailAddress(customer);
 		
 		return customer;
 	}
@@ -161,7 +156,7 @@ public class Customer {
 			resultSet = stmt.executeQuery();
 			
 			while (resultSet.next()) {
-				customer.setCustomer_id(resultSet.getInt("customer_id"));
+				customer.setCustomerID(resultSet.getInt("customer_id"));
 				customer.setFirstName(resultSet.getString("first_name"));
 				customer.setLastName(resultSet.getString("last_name"));
 				customer.setAddressLine1(resultSet.getString("address_line_1"));
@@ -176,5 +171,114 @@ public class Customer {
 			e.printStackTrace();
 		}
 		return customer;
+	}
+	
+	public void checkFirstName(Customer customer) {
+		
+		String firstName = MyScanner.getInput();
+		
+		if (firstName.isEmpty()) {
+			System.out.println("First name can not be blank or contain spaces.  Please try again.\n");
+			customer.checkFirstName(customer);
+		}
+		
+		for (int i = 0; i <= firstName.length()-1; i++) {
+			if (firstName.substring(i,i+1).equals(" ")) {
+				System.out.println("First name can not be blank or contain spaces.  Please try again.\n");
+				customer.checkFirstName(customer);
+			}
+		}
+		customer.setFirstName(firstName);
+	}
+	
+	public void checkStateAbbreviation(Customer customer) {
+		
+		System.out.println("State (two letter abbreviation): ");
+		
+		String stateAbbreviation = MyScanner.getInput();
+		
+		if (!stateAbbreviation.isEmpty()) {
+			if (stateAbbreviation.length() == 2) {
+				for (int i = 0; i < stateAbbreviation.length(); i++) {
+					if (Character.isLetter(stateAbbreviation.charAt(i))) {
+						continue;
+					}
+				}
+				customer.setState(stateAbbreviation);
+			}
+			else {
+				System.out.println("This field accepts only two-letter abbreviations (or you may leave it blank).\n");
+				customer.checkStateAbbreviation(customer);	
+			}
+		}
+	}
+	
+	public void checkZipCode(Customer customer) {
+		
+		System.out.println("ZIP Code (5 Digits, Numbers Only): ");
+		
+		String zip = MyScanner.getInput();
+		
+		if (!zip.isEmpty()) {
+			if (zip.length() == 5) {
+				for (int i = 0; i <= zip.length()-1; i++) {
+					if (Character.isLetter(zip.charAt(i))) {
+						System.out.println("This field accepts only a five digit zip code (or you may leave it blank).\n");
+						customer.checkZipCode(customer);
+					}
+				}
+				customer.setZip(zip);
+			}
+			else {
+				System.out.println("This field accepts only a five digit zip code (or you may leave it blank).\n");
+				customer.checkZipCode(customer);
+			}
+		}
+	}
+	
+	public void checkPhoneNumber(Customer customer) {
+		
+		System.out.println("Phone (10 Digits, Numbers Only): ");
+		
+		String phoneNumber = MyScanner.getInput();
+		
+		if (!phoneNumber.isEmpty()) {	
+			if (phoneNumber.length() == 10) {
+				for (int i = 0; i <= phoneNumber.length()-1; i++) {
+					if (Character.isLetter(phoneNumber.charAt(i))) {
+						System.out.println("This field accepts only a ten digit phone number without any spaces or special characters (or you may leave it blank).\n");
+						customer.checkPhoneNumber(customer);
+					}
+				}
+				customer.setPhone(phoneNumber);
+			}
+			else {
+				System.out.println("This field accepts only a ten digit phone number without any spaces or special characters (or you may leave it blank).\n");
+				customer.checkPhoneNumber(customer);
+			}
+		}
+	}
+	
+	public void checkEmailAddress(Customer customer) {
+		
+		System.out.println("Email Address: ");
+		
+		String emailAddress = MyScanner.getInputToLower();
+		
+		if (!emailAddress.isEmpty()) {
+			if (!emailAddress.contains("@") || !emailAddress.contains(".")) {
+				System.out.println("Please enter a valid email address.\n");
+				customer.checkEmailAddress(customer);
+			}
+		}
+		customer.setEmail(emailAddress);
+	}
+	
+	@Override
+	public String toString() {
+		return "Customer [customerID=" + customerID + ", username=" + username + ", password=" + password
+				+ ", firstName=" + firstName + ", lastName=" + lastName + ", addressLine1=" + addressLine1
+				+ ", addressLine2=" + addressLine2 + ", city=" + city + ", state=" + state + ", zip=" + zip + ", phone="
+				+ phone + ", email=" + email + "]";
 	}
 }

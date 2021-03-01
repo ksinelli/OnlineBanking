@@ -188,7 +188,7 @@ public class Account {
 				hasAccount = true;
 					
 				System.out.println("You currently have the following accounts open:\n");
-				System.out.println("Account Number\t\tBalance\t\tAccount Type");
+				System.out.printf("%-20s%-20s%-20s%n", "Account Number", "Balance", "Account Type");
 					
 				stmt = DatabaseConnection.prepareStatement("select account_number, account_balance, account_type from account where customer_id = ?");
 				stmt.setInt(1, customer.getCustomerID());
@@ -196,12 +196,9 @@ public class Account {
 					
 				while (resultSet.next()) {
 					for (int i = 1; i <= 3; i++) {
-						System.out.print(resultSet.getString(i)+"\t\t");
-						if (i == 1) {
-							System.out.print("\t");
-						}
-						if (i == 3) {
-							System.out.println();	
+						System.out.printf("%-20s", resultSet.getString(i));
+							if (i == 3) {
+								System.out.println();
 						}
 					}
 				}
