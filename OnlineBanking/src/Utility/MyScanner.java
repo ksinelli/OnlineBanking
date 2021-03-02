@@ -7,7 +7,6 @@ public class MyScanner {
 	
 	public static Scanner scan;
 	
-	//create scanner object to gather user input
 	public static void openScanner() {
 		scan = new Scanner(System.in);
 	}

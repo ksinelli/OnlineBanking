@@ -7,9 +7,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
-
 import Customer.Customer;
-import Customer.CustomerDashboard;
 import Utility.DatabaseConnection;
 import Utility.MyScanner;
 
@@ -124,24 +122,16 @@ public class Transaction {
 	
 	public void makeDeposit(Customer customer, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
 		
-		int depositAmount = 0;
+		transaction.setTransactionType("Deposit");
 		
-		System.out.println("How much would you like to deposit?");
+		System.out.println("How much would you like to deposit?  Enter numbers only (no dollar signs or decimals).");
 		
-		try {
-			depositAmount = MyScanner.getNumber();
-		}
-		catch (InputMismatchException e){
-			MyScanner.scan.nextLine();
-			System.out.println("Come on now, let's be at least a little realstic and stop trying to crash my program :)\n");
-			transaction.makeDeposit(customer, account, transaction, transactionArray);
-		}
+		transaction.validateAmount(customer, account, transaction, transactionArray);
 		
-		account.setAccountBalance(account.getAccountBalance() + depositAmount);
 		try {
 			//update account table
 			stmt = DatabaseConnection.prepareStatement("Update account set account_balance = ? where account_number = ?");
-			stmt.setInt(1, account.getAccountBalance());
+			stmt.setInt(1, account.getAccountBalance() + transaction.getTransactionAmount());
 			stmt.setString(2, account.getAccountNumber());
 			stmt.executeUpdate();
 			
@@ -149,7 +139,7 @@ public class Transaction {
 			stmt = DatabaseConnection.prepareStatement("Insert into transaction (customer_id, transaction_date, transaction_amount, transaction_type, account_number) values (?,?,?,?,?)");
 			stmt.setInt(1, customer.getCustomerID());
 			stmt.setString(2, dtf.format(localDate));
-			stmt.setInt(3, depositAmount);
+			stmt.setInt(3, transaction.getTransactionAmount());
 			stmt.setString(4, "Deposit");
 			stmt.setString(5, account.getAccountNumber());
 			stmt.executeUpdate();
@@ -161,26 +151,25 @@ public class Transaction {
 	}
 
 	public void makeWithdrawal(Customer customer, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
-		System.out.println("How much would you like to withdraw?");
-		int withdrawalAmount = MyScanner.getNumber();
-		if (account.getAccountBalance() - withdrawalAmount < 0) {
-			System.out.println("You don't have that much money in your account!  Try withdrawing a lesser amount or withdrawing from a different account, if available.\n");
-			CustomerDashboard.dashboardMenu(customer);
-		}
-		int newBalance = account.getAccountBalance() - withdrawalAmount;
+		
+		transaction.setTransactionType("Withdrawal");
+		
+		System.out.println("How much would you like to withdraw?  Enter numbers only (no dollar signs or decimals).");
+		
+		transaction.validateAmount(customer, account, transaction, transactionArray);
 		
 		try {
 			//update account table
 			stmt = DatabaseConnection.prepareStatement("Update account set account_balance = ? where account_number = ?");
-			stmt.setInt(1, newBalance);
+			stmt.setInt(1, account.getAccountBalance() + transaction.getTransactionAmount());
 			stmt.setString(2, account.getAccountNumber());
 			stmt.executeUpdate();
 			
 			//update transaction table
-			stmt = DatabaseConnection.prepareStatement("Insert into transaction (customer_id, transaction_date, transaction_amount, transaction_type, account_number) values (?,?,?,?)");
+			stmt = DatabaseConnection.prepareStatement("Insert into transaction (customer_id, transaction_date, transaction_amount, transaction_type, account_number) values (?,?,?,?,?)");
 			stmt.setInt(1, customer.getCustomerID());
 			stmt.setString(2, dtf.format(localDate));
-			stmt.setInt(3, withdrawalAmount);
+			stmt.setInt(3, transaction.getTransactionAmount());
 			stmt.setString(4, "Withdrawal");
 			stmt.setString(5, account.getAccountNumber());
 			stmt.executeUpdate();
@@ -188,13 +177,18 @@ public class Transaction {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
 		System.out.println("Your funds have been withdrawn.");
 	}
 	
 	public void transactionHistory(Customer customer, ArrayList<Account> accountArray, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
+		
 		System.out.println("\nPlease enter the six digit account number for which you would like to get the transaction history.");
-		account = account.checkAccountNumber(customer, accountArray, account);
+		
+		account.checkAccountNumber(customer, accountArray, account);
+		
 		System.out.printf("%-20s%-20s%-20s%-20s%n", "Transaction ID", "Transaction Date", "Transaction Amount", "Transaction Type");
+		
 		for (int i = 0; i<=transactionArray.size()-1; i++) {
 			if (transactionArray.get(i).getAccountNumber().equals(account.getAccountNumber())) {
 				System.out.printf("%-20s", transactionArray.get(i).getTransactionID());
@@ -202,6 +196,51 @@ public class Transaction {
 				System.out.printf("%-20s", transactionArray.get(i).getTransactionAmount());
 				System.out.printf("%-20s%n", transactionArray.get(i).getTransactionType());
 			}
+		}
+	}
+	
+	public void validateAmount(Customer customer, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
+		
+		int amount = 0;
+	
+		//check for InputMismatchExceptions
+		try {
+			amount = MyScanner.getNumber();
+		}
+		catch (InputMismatchException e) {
+			
+			MyScanner.scan.nextLine();
+			
+			System.out.println("Please enter numbers only.\n");
+			
+			transaction.rerouteAfterValidation(customer, account, transaction, transactionArray);
+		}
+		
+		//check for negative amounts entered
+		if (amount < 0) {
+			
+			System.out.println("Please enter a positive amount.\n");
+			
+			transaction.rerouteAfterValidation(customer, account, transaction, transactionArray);		
+		}
+		
+		//check to make sure customer is not withdrawing more money than is available
+		if (transaction.getTransactionType().equals("Withdrawal") && account.getAccountBalance() - amount < 0) {
+			
+			System.out.println("You don't have that much money in your account.  Try withdrawing a lesser amount.\n");
+			
+			transaction.rerouteAfterValidation(customer, account, transaction, transactionArray);
+		}
+		
+		transaction.setTransactionAmount(amount);
+	}
+	
+	public void rerouteAfterValidation(Customer customer, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
+		if (transaction.getTransactionType().equals("Withdrawal")) {
+			transaction.makeWithdrawal(customer, account, transaction, transactionArray);
+		}
+		else {
+			transaction.makeDeposit(customer, account, transaction, transactionArray);
 		}
 	}
 }

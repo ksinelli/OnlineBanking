@@ -20,7 +20,6 @@ public class Account {
 	private static ResultSet resultSet;
 	private static String choice;
 	private static PreparedStatement stmt;
-	private static boolean hasAccount = false;
 	
 	public int getCustomerID() {
 		return customerID;
@@ -157,16 +156,15 @@ public class Account {
 		return accountArray;
 	}
 	
-	public static void rerouteIfNoAccount(boolean hasAccount, Customer customer) {
-		if (hasAccount == false) {
-			CustomerDashboard.dashboardMenu(customer);
-		}
-	}
+	/*
+	 * public static void rerouteIfNoAccount(boolean hasAccount, Customer customer)
+	 * { if (hasAccount == false) { CustomerDashboard.dashboardMenu(customer); } }
+	 */
 	
 	
 	//Checks if the customer has any account open yet
 	//Returns a different message based on whether hasAccount is true or false
-	public boolean hasAccount(Customer customer) {
+	public void checkForOpenAccount(Customer customer, ArrayList<Account> accountArray, Account account) {
 
 		try {
 				
@@ -179,13 +177,11 @@ public class Account {
 			//if no accounts open
 			if (resultSet.getInt(1) == 0) {
 				System.out.println("You do not currently have any open accounts.");
-				return hasAccount;
+				CustomerDashboard.dashboardMenu(customer);
 			}
 				
 			//if 1 or more accounts open, display each account and its properties in console with formatting
 			else if (!(resultSet.getInt(1) == 0)) {
-				
-				hasAccount = true;
 					
 				System.out.println("You currently have the following accounts open:\n");
 				System.out.printf("%-20s%-20s%-20s%n", "Account Number", "Balance", "Account Type");
@@ -206,13 +202,11 @@ public class Account {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			}
-		return hasAccount;
 	}
 	
-	public Account checkAccountNumber(Customer customer, ArrayList<Account> accountArray, Account account) {	
+	public void checkAccountNumber(Customer customer, ArrayList<Account> accountArray, Account account) {	
 		
 		String choice = MyScanner.getInput();
-		boolean accountNumberIsCorrect = false;
 		
 		for (int i = 0; i<=accountArray.size()-1; i++) {
 			if (accountArray.get(i).getAccountNumber().equals(choice)) {
@@ -220,14 +214,12 @@ public class Account {
 				account.setCustomerID(accountArray.get(i).getCustomerID());
 				account.setAccountBalance(accountArray.get(i).getAccountBalance());
 				account.setAccountType(accountArray.get(i).getAccountType());
-				accountNumberIsCorrect = true;
+			}
+			
+			else {
+				System.out.println("I didn't recognize that account number.  Please try again.");
+				checkAccountNumber(customer, accountArray, account);
 			}
 		}
-		if (accountNumberIsCorrect == false) {
-			System.out.println("I didn't recognize that account number.  Please try again.");
-			checkAccountNumber(customer, accountArray, account);
-		}
-		return account;
 	}
-	
 }

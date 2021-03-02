@@ -97,14 +97,15 @@ public class Customer {
 		this.email = email;
 	}
 	
-	public Customer createOrUpdateProfile(Customer customer) {
+	public void createOrUpdateProfile(Customer customer) {
 		System.out.println("Please provide some additional information about yourself.");
 		System.out.println("Only first name is required.  All other fields are optional.  Press Enter to leave a field blank.");
 		System.out.println("NOTE: DO NOT USE YOUR REAL INFORMATION.  Be creative and make something up!\n");
 		
-		System.out.println("First Name: ");
 		customer.checkFirstName(customer);
 
+		System.out.println(customer.toString());
+		
 		System.out.println("Last Name: ");
 		customer.setLastName(MyScanner.getInput());
 	
@@ -124,13 +125,11 @@ public class Customer {
 		customer.checkPhoneNumber(customer);
 	
 		customer.checkEmailAddress(customer);
-		
-		return customer;
 	}
 		
-	public Customer pushProfileToDatabase(Customer customer) {
+	public void pushProfileToDatabase(Customer customer) {
 		try {
-			stmt = DatabaseConnection.prepareStatement("Update customer set first_name = ?, last_name = ?, address_line_1 = ?, address_line_2 = ?, city = ?, state = ?, zip = ?, phone = ?, email = ? where customer_id = ?");
+			stmt = DatabaseConnection.prepareStatement("Update customer set first_name = ?, last_name = ?, address_line_1 = ?, address_line_2 = ?, city = ?, state = ?, zip = ?, phone = ?, email = ? where username = ?");
 			stmt.setString(1, customer.getFirstName());
 			stmt.setString(2, customer.getLastName());
 			stmt.setString(3, customer.getAddressLine1());
@@ -140,16 +139,14 @@ public class Customer {
 			stmt.setString(7, customer.getZip());
 			stmt.setString(8, customer.getPhone());
 			stmt.setString(9, customer.getEmail());
-			stmt.setInt(10, customer.getCustomerID());
+			stmt.setString(10, customer.getUsername());
 			stmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
-		return customer;
 	}
 	
-	public Customer pullProfileFromDatabase(Customer customer) {
+	public void pullProfileFromDatabase(Customer customer) {
 		try {
 			stmt = DatabaseConnection.prepareStatement("Select first_name, last_name, address_line_1, address_line_2, city, state, zip, phone, email, customer_id from customer where username = ?");
 			stmt.setString(1, customer.getUsername());
@@ -170,25 +167,21 @@ public class Customer {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return customer;
 	}
 	
 	public void checkFirstName(Customer customer) {
 		
-		String firstName = MyScanner.getInput();
+		System.out.println("First Name: ");
 		
-		if (firstName.isEmpty()) {
-			System.out.println("First name can not be blank or contain spaces.  Please try again.\n");
+		String enteredFirstName = MyScanner.getInput();
+		
+		if (enteredFirstName.isEmpty() || enteredFirstName.contains(" ")) {
+			System.out.println("First name is required and can not contain spaces.  Please try again.\n");
 			customer.checkFirstName(customer);
 		}
-		
-		for (int i = 0; i <= firstName.length()-1; i++) {
-			if (firstName.substring(i,i+1).equals(" ")) {
-				System.out.println("First name can not be blank or contain spaces.  Please try again.\n");
-				customer.checkFirstName(customer);
-			}
+		else {
+			customer.setFirstName(enteredFirstName);
 		}
-		customer.setFirstName(firstName);
 	}
 	
 	public void checkStateAbbreviation(Customer customer) {
@@ -272,13 +265,5 @@ public class Customer {
 			}
 		}
 		customer.setEmail(emailAddress);
-	}
-	
-	@Override
-	public String toString() {
-		return "Customer [customerID=" + customerID + ", username=" + username + ", password=" + password
-				+ ", firstName=" + firstName + ", lastName=" + lastName + ", addressLine1=" + addressLine1
-				+ ", addressLine2=" + addressLine2 + ", city=" + city + ", state=" + state + ", zip=" + zip + ", phone="
-				+ phone + ", email=" + email + "]";
 	}
 }

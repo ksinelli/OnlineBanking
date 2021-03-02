@@ -8,7 +8,6 @@ import Account.Transaction;
 public class CustomerDashboard {
 	
 	private static String choice;
-	private static boolean hasAccount;
 	
 	public static void dashboardMenu (Customer customer) {
 		
@@ -31,20 +30,18 @@ public class CustomerDashboard {
 		choice = MyScanner.getInputToLower();
 		
 		if (choice.equals("open account")) {
-			account.hasAccount(customer);
+			account.checkForOpenAccount(customer, accountArray, account);
 			Account.openAccount(customer, account);
 		}
 		
 		else if (choice.equals("close account")) {
-			hasAccount = account.hasAccount(customer);
-			Account.rerouteIfNoAccount(hasAccount, customer);
+			account.checkForOpenAccount(customer, accountArray, account);
 			account.closeAccount(customer, accountArray, account, transactionArray);
 			dashboardMenu(customer);
 		}
 		
 		else if (choice.equals("make deposit")) {
-			hasAccount = account.hasAccount(customer);
-			Account.rerouteIfNoAccount(hasAccount, customer);
+			account.checkForOpenAccount(customer, accountArray, account);
 			System.out.println("\nPlease enter the six digit account number for the account into which you would like to deposit money.");
 			account.checkAccountNumber(customer, accountArray, account);
 			transaction.makeDeposit(customer, account,transaction, transactionArray);
@@ -52,8 +49,7 @@ public class CustomerDashboard {
 		}
 		
 		else if (choice.equals("make withdrawal")) {
-			hasAccount = account.hasAccount(customer);
-			Account.rerouteIfNoAccount(hasAccount, customer);
+			account.checkForOpenAccount(customer, accountArray, account);
 			System.out.println("\nPlease enter the six digit account number for the account from which you would like to withdraw money.");
 			account.checkAccountNumber(customer, accountArray, account);
 			transaction.makeWithdrawal(customer, account, transaction, transactionArray);
@@ -61,26 +57,19 @@ public class CustomerDashboard {
 		}
 		
 		else if (choice.equals("check balance")) {
-			hasAccount = account.hasAccount(customer);
-			Account.rerouteIfNoAccount(hasAccount, customer);
+			account.checkForOpenAccount(customer, accountArray, account);
 			dashboardMenu(customer);
 		}
 		
 		else if (choice.equals("transaction history")) {
-			hasAccount = account.hasAccount(customer);
-			Account.rerouteIfNoAccount(hasAccount, customer);
+			account.checkForOpenAccount(customer, accountArray, account);
 			transaction.transactionHistory(customer, accountArray, account, transaction, transactionArray);
 			dashboardMenu(customer);
 		}
 		
 		else if (choice.equals("update profile")) {
-			customer = customer.createOrUpdateProfile(customer);
-			
-			System.out.println(customer.toString());
-			MyScanner.getInput();
-			
+			customer.createOrUpdateProfile(customer);
 			customer.pushProfileToDatabase(customer);
-			
 			System.out.println("Your profile has been updated.");
 			dashboardMenu(customer);
 		}
@@ -90,7 +79,7 @@ public class CustomerDashboard {
 		}
 		
 		else {
-			System.out.println("I'm sorry.  I didn't understand that.  Please check your spelling and try again.\n");
+			System.out.println("\nI'm sorry.  I didn't understand that.  Please check your spelling and try again.");
 			dashboardMenu(customer);
 		}
 	}

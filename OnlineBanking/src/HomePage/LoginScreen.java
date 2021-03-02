@@ -109,7 +109,7 @@ public class LoginScreen {
 				startup();
 			}
 			
-			customer = customer.pullProfileFromDatabase(customer);
+			customer.pullProfileFromDatabase(customer);
 		}
 
 		catch (SQLException e) {
@@ -174,7 +174,7 @@ public class LoginScreen {
 			e.printStackTrace();
 		}
 		
-		customer = customer.createOrUpdateProfile(customer);
+		customer.createOrUpdateProfile(customer);
 		customer.pushProfileToDatabase(customer);		
 		System.out.println("Your account has been created.  Please login using your new credentials.\n");
 		signIn(customer);
