@@ -4,7 +4,6 @@ import java.util.Scanner;
 import HomePage.LoginScreen;
 
 public class MyScanner {
-	
 	public static Scanner scan;
 	
 	public static void openScanner() {
@@ -17,6 +16,7 @@ public class MyScanner {
 	
 	public static String getInput() {
 		String input = scan.nextLine();
+		
 		if (input.toLowerCase().equals("home")) {
 			LoginScreen.startup();
 		}
@@ -25,6 +25,7 @@ public class MyScanner {
 	
 	public static String getInputToLower() {
 		String input = scan.nextLine().toLowerCase();
+		
 		if (input.equals("home")) {
 			LoginScreen.startup();
 		}
@@ -33,8 +34,9 @@ public class MyScanner {
 	
 	public static int getNumber() {
 		int input = scan.nextInt();
+		
 		scan.nextLine();
+		
 		return input;
 	}
-
 }

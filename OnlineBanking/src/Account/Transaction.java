@@ -19,10 +19,11 @@ public class Transaction {
 	private int customerID;
 	private String accountNumber;
 	private static ResultSet resultSet;
+	private static PreparedStatement stmt;
+	boolean isValidAmount = false;
+	
 	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/YYYY");
 	LocalDate localDate = LocalDate.now();
-	
-	private static PreparedStatement stmt;
 	
 	public int getTransactionID() {
 		return transactionID;
@@ -72,9 +73,7 @@ public class Transaction {
 		this.accountNumber = accountNumber;
 	}
 	
-	
 	public static ArrayList<Transaction> createTransactionArrayList (Customer customer) {
-		
 		ArrayList<Transaction> transactionArray = null;
 		
 		//Create an ArrayList of Transaction objects.  The size of the ArrayList is determined by the count() function of the SQL query.
@@ -84,8 +83,11 @@ public class Transaction {
 			stmt.setInt(1, customer.getCustomerID());
 			resultSet = stmt.executeQuery();
 			resultSet.next();
+			
 			int numberOfTransactions = resultSet.getInt(1);
+			
 			transactionArray = new ArrayList<Transaction>(numberOfTransactions);
+			
 			for (int i = 1; i <= numberOfTransactions; i++) {
 				Transaction transactionInArrayList = new Transaction();
 				transactionArray.add(transactionInArrayList);	
@@ -96,7 +98,7 @@ public class Transaction {
 			stmt.setInt(1, customer.getCustomerID());
 			resultSet = stmt.executeQuery();
 			
-			//Add the data that was retrieved from the database to Transaction instances in the Transaction ArrayList
+			//Add the data that was retrieved from the database to Transaction instances and add each instance to the Transaction ArrayList
 			//The outer loop iterates over each Transaction instance
 			//The inner loop iterates over each individual property for each Transaction instance		
 			int i = 0;
@@ -118,16 +120,13 @@ public class Transaction {
 		return transactionArray;
 	}
 	
-	
-	
 	public void makeDeposit(Customer customer, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
-		
 		transaction.setTransactionType("Deposit");
 		
-		System.out.println("How much would you like to deposit?  Enter numbers only (no dollar signs or decimals).");
-		
-		transaction.validateAmount(customer, account, transaction, transactionArray);
-		
+		while (isValidAmount == false) {
+			System.out.println("How much would you like to deposit?  Enter numbers only (no dollar signs or decimals).");
+			transaction.validateAmount(customer, account, transaction, transactionArray);
+		}
 		try {
 			//update account table
 			stmt = DatabaseConnection.prepareStatement("Update account set account_balance = ? where account_number = ?");
@@ -144,24 +143,24 @@ public class Transaction {
 			stmt.setString(5, account.getAccountNumber());
 			stmt.executeUpdate();
 			
-		} catch (SQLException e) {
+		} 
+		catch (SQLException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Your funds have been deposited.");
+		System.out.println("Your funds have been deposited.\n");
 	}
 
 	public void makeWithdrawal(Customer customer, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
-		
 		transaction.setTransactionType("Withdrawal");
 		
-		System.out.println("How much would you like to withdraw?  Enter numbers only (no dollar signs or decimals).");
-		
-		transaction.validateAmount(customer, account, transaction, transactionArray);
-		
+		while (isValidAmount == false) {
+			System.out.println("How much would you like to withdraw?  Enter numbers only (no dollar signs or decimals).");
+			transaction.validateAmount(customer, account, transaction, transactionArray);
+		}
 		try {
 			//update account table
 			stmt = DatabaseConnection.prepareStatement("Update account set account_balance = ? where account_number = ?");
-			stmt.setInt(1, account.getAccountBalance() + transaction.getTransactionAmount());
+			stmt.setInt(1, account.getAccountBalance() - transaction.getTransactionAmount());
 			stmt.setString(2, account.getAccountNumber());
 			stmt.executeUpdate();
 			
@@ -173,20 +172,14 @@ public class Transaction {
 			stmt.setString(4, "Withdrawal");
 			stmt.setString(5, account.getAccountNumber());
 			stmt.executeUpdate();
-			
-		} catch (SQLException e) {
+		} 
+		catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
-		System.out.println("Your funds have been withdrawn.");
+		System.out.println("Your funds have been withdrawn.\n");
 	}
 	
 	public void transactionHistory(Customer customer, ArrayList<Account> accountArray, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
-		
-		System.out.println("\nPlease enter the six digit account number for which you would like to get the transaction history.");
-		
-		account.checkAccountNumber(customer, accountArray, account);
-		
 		System.out.printf("%-20s%-20s%-20s%-20s%n", "Transaction ID", "Transaction Date", "Transaction Amount", "Transaction Type");
 		
 		for (int i = 0; i<=transactionArray.size()-1; i++) {
@@ -197,50 +190,41 @@ public class Transaction {
 				System.out.printf("%-20s%n", transactionArray.get(i).getTransactionType());
 			}
 		}
+		System.out.println();
 	}
 	
 	public void validateAmount(Customer customer, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
-		
 		int amount = 0;
+		boolean condition1 = true;
+		boolean condition2 = true;
+		boolean condition3 = true;
 	
 		//check for InputMismatchExceptions
 		try {
 			amount = MyScanner.getNumber();
 		}
 		catch (InputMismatchException e) {
-			
 			MyScanner.scan.nextLine();
 			
 			System.out.println("Please enter numbers only.\n");
-			
-			transaction.rerouteAfterValidation(customer, account, transaction, transactionArray);
+				
+			condition1 = false;
 		}
-		
 		//check for negative amounts entered
 		if (amount < 0) {
-			
 			System.out.println("Please enter a positive amount.\n");
-			
-			transaction.rerouteAfterValidation(customer, account, transaction, transactionArray);		
+				
+			condition2 = false;
 		}
-		
 		//check to make sure customer is not withdrawing more money than is available
-		if (transaction.getTransactionType().equals("Withdrawal") && account.getAccountBalance() - amount < 0) {
-			
+		else if (transaction.getTransactionType().equals("Withdrawal") && account.getAccountBalance() - amount < 0) {
 			System.out.println("You don't have that much money in your account.  Try withdrawing a lesser amount.\n");
 			
-			transaction.rerouteAfterValidation(customer, account, transaction, transactionArray);
+			condition3 = false;
 		}
-		
-		transaction.setTransactionAmount(amount);
-	}
-	
-	public void rerouteAfterValidation(Customer customer, Account account, Transaction transaction, ArrayList<Transaction> transactionArray) {
-		if (transaction.getTransactionType().equals("Withdrawal")) {
-			transaction.makeWithdrawal(customer, account, transaction, transactionArray);
-		}
-		else {
-			transaction.makeDeposit(customer, account, transaction, transactionArray);
+		else if (condition1 == true && condition2 == true && condition3 == true){
+			isValidAmount = true;
+			transaction.setTransactionAmount(amount);
 		}
 	}
 }

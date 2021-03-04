@@ -7,7 +7,6 @@ import Utility.DatabaseConnection;
 import Utility.MyScanner;
 
 public class Customer {
-	
 	private int customerID;
 	private String username;
 	private String password;
@@ -19,8 +18,7 @@ public class Customer {
 	private String state;
 	private String zip;
 	private String phone;
-	private String email;
-	
+	private String email;	
 	private static ResultSet resultSet;
 	private static PreparedStatement stmt;
 
@@ -103,8 +101,6 @@ public class Customer {
 		System.out.println("NOTE: DO NOT USE YOUR REAL INFORMATION.  Be creative and make something up!\n");
 		
 		customer.checkFirstName(customer);
-
-		System.out.println(customer.toString());
 		
 		System.out.println("Last Name: ");
 		customer.setLastName(MyScanner.getInput());
@@ -141,9 +137,11 @@ public class Customer {
 			stmt.setString(9, customer.getEmail());
 			stmt.setString(10, customer.getUsername());
 			stmt.executeUpdate();
-		} catch (SQLException e) {
+		} 
+		catch (SQLException e) {
 			e.printStackTrace();
 		}
+		System.out.println("Your profile has been updated.\n");
 	}
 	
 	public void pullProfileFromDatabase(Customer customer) {
@@ -164,106 +162,124 @@ public class Customer {
 				customer.setPhone(resultSet.getString("phone"));
 				customer.setEmail(resultSet.getString("email"));
 			}
-		} catch (SQLException e) {
+		} 
+		catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	public void checkFirstName(Customer customer) {
+		boolean isValidFirstName = false;
+		String enteredFirstName;
 		
-		System.out.println("First Name: ");
+		while (isValidFirstName == false) {
+			System.out.println("First Name: ");
 		
-		String enteredFirstName = MyScanner.getInput();
-		
-		if (enteredFirstName.isEmpty() || enteredFirstName.contains(" ")) {
-			System.out.println("First name is required and can not contain spaces.  Please try again.\n");
-			customer.checkFirstName(customer);
-		}
-		else {
-			customer.setFirstName(enteredFirstName);
+			enteredFirstName = MyScanner.getInput();
+			
+			if (enteredFirstName.isEmpty() || enteredFirstName.contains(" ")) {
+				System.out.println("First name is required and can not contain spaces.  Please try again.\n");
+			}
+			else {
+				for (int i = 0; i < enteredFirstName.length(); i++) {
+					if (!Character.isLetter(enteredFirstName.charAt(i))) {
+						System.out.println("First name can not contain numbers or symbols.  Please try again.\n");
+						break;
+					}
+					else {
+						customer.setFirstName(enteredFirstName);
+						isValidFirstName = true;
+					}
+				}
+			}
 		}
 	}
 	
 	public void checkStateAbbreviation(Customer customer) {
+		boolean isValidStateAbbreviation = false;
+		String stateAbbreviation;
 		
-		System.out.println("State (two letter abbreviation): ");
+		while (isValidStateAbbreviation == false) {
+			System.out.println("State (two letter abbreviation): ");
 		
-		String stateAbbreviation = MyScanner.getInput();
+			stateAbbreviation = MyScanner.getInput();
 		
-		if (!stateAbbreviation.isEmpty()) {
-			if (stateAbbreviation.length() == 2) {
-				for (int i = 0; i < stateAbbreviation.length(); i++) {
-					if (Character.isLetter(stateAbbreviation.charAt(i))) {
-						continue;
-					}
-				}
+			if (stateAbbreviation.isEmpty()) {
+				break;
+			}
+			else if (stateAbbreviation.length() == 2 && Character.isLetter(stateAbbreviation.charAt(0)) && Character.isLetter(stateAbbreviation.charAt(1))) {
 				customer.setState(stateAbbreviation);
+				isValidStateAbbreviation = true;
 			}
 			else {
 				System.out.println("This field accepts only two-letter abbreviations (or you may leave it blank).\n");
-				customer.checkStateAbbreviation(customer);	
 			}
 		}
 	}
 	
 	public void checkZipCode(Customer customer) {
+		boolean isValidZipCode = false;
+		String zip;
 		
-		System.out.println("ZIP Code (5 Digits, Numbers Only): ");
+		while (isValidZipCode == false) {
+			System.out.println("ZIP Code (5 Digits, Numbers Only): ");
 		
-		String zip = MyScanner.getInput();
+			zip = MyScanner.getInput();
 		
-		if (!zip.isEmpty()) {
-			if (zip.length() == 5) {
-				for (int i = 0; i <= zip.length()-1; i++) {
-					if (Character.isLetter(zip.charAt(i))) {
-						System.out.println("This field accepts only a five digit zip code (or you may leave it blank).\n");
-						customer.checkZipCode(customer);
-					}
-				}
+			if (zip.isEmpty()) {
+				break;
+			}
+			else if (zip.length() == 5 && zip.matches("[0-9]+")) {
 				customer.setZip(zip);
+				isValidZipCode = true;
 			}
 			else {
 				System.out.println("This field accepts only a five digit zip code (or you may leave it blank).\n");
-				customer.checkZipCode(customer);
 			}
 		}
 	}
 	
 	public void checkPhoneNumber(Customer customer) {
+		boolean isValidPhoneNumber = false;
+		String phoneNumber;
 		
-		System.out.println("Phone (10 Digits, Numbers Only): ");
+		while (isValidPhoneNumber == false) {
+			System.out.println("Phone (10 Digits, Numbers Only): ");
 		
-		String phoneNumber = MyScanner.getInput();
+			phoneNumber = MyScanner.getInput();
 		
-		if (!phoneNumber.isEmpty()) {	
-			if (phoneNumber.length() == 10) {
-				for (int i = 0; i <= phoneNumber.length()-1; i++) {
-					if (Character.isLetter(phoneNumber.charAt(i))) {
-						System.out.println("This field accepts only a ten digit phone number without any spaces or special characters (or you may leave it blank).\n");
-						customer.checkPhoneNumber(customer);
-					}
-				}
+			if (phoneNumber.isEmpty()) {
+				break;
+			}
+			else if (phoneNumber.length() == 10 && phoneNumber.matches("[0-9]+")) {
 				customer.setPhone(phoneNumber);
+				isValidPhoneNumber = true;
 			}
 			else {
 				System.out.println("This field accepts only a ten digit phone number without any spaces or special characters (or you may leave it blank).\n");
-				customer.checkPhoneNumber(customer);
 			}
 		}
 	}
 	
 	public void checkEmailAddress(Customer customer) {
+		boolean isValidEmailAddress = false;
+		String emailAddress;
 		
-		System.out.println("Email Address: ");
+		while (isValidEmailAddress == false) {
+			System.out.println("Email Address: ");
 		
-		String emailAddress = MyScanner.getInputToLower();
+			emailAddress = MyScanner.getInputToLower();
 		
-		if (!emailAddress.isEmpty()) {
-			if (!emailAddress.contains("@") || !emailAddress.contains(".")) {
+			if (emailAddress.isEmpty()) {
+				break;
+			}
+			else if (!emailAddress.contains("@") || !emailAddress.contains(".")) {
 				System.out.println("Please enter a valid email address.\n");
-				customer.checkEmailAddress(customer);
+			}
+			else {
+				customer.setEmail(emailAddress);
+				isValidEmailAddress = true;
 			}
 		}
-		customer.setEmail(emailAddress);
 	}
 }
