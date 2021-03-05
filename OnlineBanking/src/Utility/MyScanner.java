@@ -1,6 +1,5 @@
 package Utility;
 import java.util.Scanner;
-
 import HomePage.LoginScreen;
 
 public class MyScanner {

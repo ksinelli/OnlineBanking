@@ -8,7 +8,6 @@ import Utility.MyScanner;
 import Utility.DatabaseConnection;
 
 public class LoginScreen {
-	
 	private static ResultSet resultSet;
 	private static PreparedStatement stmt;
 	
@@ -19,12 +18,8 @@ public class LoginScreen {
 			System.out.println("Hello, and welcome to KAS Financial!\n");
 			startup();
 		}
-		catch (Exception e) {
+		catch (Exception e){
 			e.printStackTrace();
-		}
-		finally {
-	        DatabaseConnection.closeDbConnection();
-	        MyScanner.closeScanner();
 		}
 	}
 	
@@ -72,7 +67,6 @@ public class LoginScreen {
 		customer = getPasswordFromDb(customer);
 		updatePassword(customer);		
 	}
-	
 	//retrieve entered username from database and if it does not exist, redirect to home page.
 	public static String getUsernameFromDb(Customer customer) {	
 		System.out.println("Please enter your username.");
@@ -94,7 +88,6 @@ public class LoginScreen {
 		}		
 		return input;
 	}
-
 	//retrieve database password and compare to entered password.  If they do not match, return to home page.
 	public static Customer getPasswordFromDb(Customer customer) {
 		System.out.println("Please enter your password.");
@@ -121,7 +114,6 @@ public class LoginScreen {
 		}
 		return customer;
 	}
-
 	//Update SQL database with new user-supplied password
 	public static void updatePassword(Customer customer) {
 		System.out.println("Please enter a new password.");
@@ -141,7 +133,6 @@ public class LoginScreen {
 		
 		signIn(customer);
 	}
-	
 	//create new customer profile, assign it to customer object, and insert it into database
 	public static void createAccount(Customer customer) {
 		boolean usernameIsValid = false;
@@ -167,7 +158,6 @@ public class LoginScreen {
 				e.printStackTrace();
 			}
 		}
-			
 		System.out.println("Please create a password for your account.");
 				
 		customer.setPassword(MyScanner.getInput());	

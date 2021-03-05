@@ -47,22 +47,31 @@ public class CustomerDashboard {
 					}
 					break;
 				case "make deposit":
-					account.checkForOpenAccount(customer, accountArray, account);
-					account.checkAccountNumber(customer, accountArray, account);
-					transaction.makeDeposit(customer, account,transaction, transactionArray);
+					hasAccount = account.checkForOpenAccount(customer, accountArray, account);
+					while (hasAccount == true) {
+						account.checkAccountNumber(customer, accountArray, account);
+						transaction.makeDeposit(customer, account,transaction, transactionArray);
+						break;
+					}
 					break;
 				case "make withdrawal":
-					account.checkForOpenAccount(customer, accountArray, account);
-					account.checkAccountNumber(customer, accountArray, account);
-					transaction.makeWithdrawal(customer, account, transaction, transactionArray);
+					hasAccount = account.checkForOpenAccount(customer, accountArray, account);
+					while (hasAccount == true) {
+						account.checkAccountNumber(customer, accountArray, account);
+						transaction.makeWithdrawal(customer, account, transaction, transactionArray);
+						break;
+					}
 					break;
 				case "check balance":
 					account.checkForOpenAccount(customer, accountArray, account);
 					break;
 				case "transaction history":
-					account.checkForOpenAccount(customer, accountArray, account);
-					account.checkAccountNumber(customer, accountArray, account);
-					transaction.transactionHistory(customer, accountArray, account, transaction, transactionArray);
+					hasAccount = account.checkForOpenAccount(customer, accountArray, account);
+					while (hasAccount == true) {
+						account.checkAccountNumber(customer, accountArray, account);
+						transaction.transactionHistory(customer, accountArray, account, transaction, transactionArray);
+						break;
+					}
 					break;
 				case "update profile":
 					customer.createOrUpdateProfile(customer);
@@ -83,5 +92,6 @@ public class CustomerDashboard {
 		
 		DatabaseConnection.closeDbConnection();
 		MyScanner.closeScanner();
+		System.exit(0);
 	}
 }

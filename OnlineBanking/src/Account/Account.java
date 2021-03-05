@@ -147,7 +147,7 @@ public class Account {
 		
 			choice = MyScanner.getInput();
 		
-			for (int i = 0; i<=accountArray.size()-1; i++) {
+			for (int i = 0; i < accountArray.size(); i++) {
 				if (accountArray.get(i).getAccountNumber().equals(choice)) {
 					account.setAccountNumber(accountArray.get(i).getAccountNumber());
 					account.setCustomerID(accountArray.get(i).getCustomerID());
@@ -155,9 +155,9 @@ public class Account {
 					account.setAccountType(accountArray.get(i).getAccountType());
 					isValidAccountNumber = true;
 				}
-				else {
-					System.out.println("I didn't recognize that account number.  Please try again.\n");
-				}
+			}
+			if (isValidAccountNumber == false){
+				System.out.println("I didn't recognize that account number.  Please try again.\n");
 			}
 		}
 	}

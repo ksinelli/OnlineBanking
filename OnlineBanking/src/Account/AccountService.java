@@ -55,6 +55,6 @@ public class AccountService {
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Your account has been deleted and let's pretend that any money in the account was returned to you in cash :)\n");
+		System.out.println("Your account has been closed and let's pretend that any money in the account was returned to you in cash :)\n");
 	}
 }
